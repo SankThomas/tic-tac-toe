@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocalStorage } from "./useLocalStorage";
+import { useCallback } from "react";
 
 const WINNING_COMBINATIONS = [
   [0, 1, 2],
@@ -55,6 +56,18 @@ export const useGameLogic = (gameMode, playerSymbol) => {
     checkWinner();
   }, [board]);
 
+  const makeMove = useCallback(
+    (index) => {
+      if (board[index] !== null || gameStatus !== "playing") return;
+
+      const newBoard = [...board];
+      newBoard[index] = currentPlayer;
+      setBoard(newBoard);
+      setCurrentPlayer(currentPlayer === "X" ? "O" : "X");
+    },
+    [board, gameStatus, currentPlayer, setBoard, setCurrentPlayer]
+  );
+
   // AI moves
   useEffect(() => {
     if (
@@ -71,16 +84,15 @@ export const useGameLogic = (gameMode, playerSymbol) => {
 
       return () => clearTimeout(timer);
     }
-  }, [currentPlayer, gameMode, gameStatus, board, cpuSymbol, playerSymbol]);
-
-  const makeMove = (index) => {
-    if (board[index] !== null || gameStatus !== "playing") return;
-
-    const newBoard = [...board];
-    newBoard[index] = currentPlayer;
-    setBoard(newBoard);
-    setCurrentPlayer(currentPlayer === "X" ? "O" : "X");
-  };
+  }, [
+    currentPlayer,
+    gameMode,
+    gameStatus,
+    board,
+    cpuSymbol,
+    playerSymbol,
+    makeMove,
+  ]);
 
   const resetGame = () => {
     const newBoard = Array(9).fill(null);
